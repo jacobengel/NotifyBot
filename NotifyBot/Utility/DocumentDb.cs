@@ -34,7 +34,7 @@ namespace NotifyBot.Utility
                 collectionTask.Wait();
                 this.collection = collectionTask.Result;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 this.client.Dispose();
                 throw new Exception("Error setting up database");
@@ -104,7 +104,7 @@ namespace NotifyBot.Utility
                     .FirstOrDefault();
             if (document == null)
             {
-                throw new Exception("Document Id: " + documentId + " not found");
+                throw new Exception("Document Name: " + documentId + " not found");
             }
             return document;
         }

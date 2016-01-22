@@ -10,6 +10,8 @@ namespace NotifyBot.Controllers
 {
     using Microsoft.Azure.Documents;
 
+    using Newtonsoft.Json;
+
     using ServiceStack;
 
     public class NotifyController : ApiController
@@ -21,9 +23,6 @@ namespace NotifyBot.Controllers
             var commandHandler = new CommandHandler();
             try
             {
-                var senderName = request.Item.message.from.name;
-                var senderMention = request.Item.message.from.mention_name;
-                
                 var tempString = Parser.SplitOnFirstWord(request.Item.message.message).Item2;
                 if (string.IsNullOrEmpty(tempString))
                 {
@@ -40,11 +39,10 @@ namespace NotifyBot.Controllers
                 
                 //get message
                 var message = parsedMessage.Item2;
-                Document result = null;
-                
+                var result = "";
+
                 if (commandResult)
                 {
-
                     switch (command)
                     {
                         case Command.Add:
@@ -53,10 +51,13 @@ namespace NotifyBot.Controllers
                         case Command.Update:
                             result = commandHandler.Update(message);
                             break;
-                        default:
-                            result = commandHandler.Email(commandString, message);
-                            break;
                     }
+                }
+                else
+                {
+                    var senderName = request.Item.message.from.name;
+                    var senderMention = request.Item.message.from.mention_name;
+                    result = commandHandler.Email(senderName, senderMention, commandString, message);
                 }
 
                 if (result == null)
@@ -65,18 +66,11 @@ namespace NotifyBot.Controllers
                 }
 
 
-                //Send emails
-                var to = Newtonsoft.Json.JsonConvert.DeserializeObject<Notification>(result.ToString()).Recipients;
-                var subject = senderName + " AKA " + senderMention + " has notified you!";
-                var body = message;
-
-                this.sendEmail(to, subject, body);
-
                 // Notify Hipchat
                 var responseBody = new NotifyResponse
                 {
                     color = "green",
-                    message = "It's going to be sunny tomorrow! (" + message + " )",
+                    message = "It's going to be sunny tomorrow! (" + result + " )",
                     message_format = "text",
                     notify = "false"
                 };
@@ -85,34 +79,18 @@ namespace NotifyBot.Controllers
             catch (Exception ex)
             {
                 commandHandler.Dispose();
-                responseMessage = this.Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
+                var responseBody = new NotifyResponse
+                {
+                    color = "green",
+                    message = ex.Message,
+                    message_format = "text",
+                    notify = "false"
+                };
+                responseMessage = this.Request.CreateErrorResponse(HttpStatusCode.InternalServerError, JsonConvert.SerializeObject(responseBody));
             }
             return responseMessage;
         }
 
-        private void sendEmail(string to, string subject, string body)
-        {
-            var message = new MailMessage();
-            const string FromEmail = "hipchatemailbot@gmail.com";
-            const string FromPw = "winlikecharliesheen";
-            var toEmail = to;
-            message.From = new MailAddress(FromEmail);
-            message.To.Add(toEmail);
-            message.Subject = subject;
-            message.Body = body;
-            message.IsBodyHtml = false;
-            message.DeliveryNotificationOptions = DeliveryNotificationOptions.OnFailure;
-
-            using (var smtpClient = new SmtpClient("smtp.gmail.com", 587))
-            {
-                smtpClient.EnableSsl = true;
-                smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
-                smtpClient.UseDefaultCredentials = false;
-                smtpClient.Credentials = new NetworkCredential(FromEmail, FromPw);
-
-                smtpClient.Send(message.From.ToString(), message.To.ToString(),
-                                message.Subject, message.Body);
-            }
-        }
+        
     }
 }
