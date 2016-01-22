@@ -35,14 +35,19 @@ namespace NotifyBot.Utility
             throw new Exception("That notification alias already exists");
         }
 
-        public string Update()
+        public Document Update(string message)
         {
-            return "Not Implemented";
+            throw new Exception("That notification alias doesn't exists");
         }
 
-        public string Email()
+        public Document Email(string documentId, string message)
         {
-            return "Not Implements";
+            throw new Exception("That notification alias doesn't exists");
+        }
+
+        public void Dispose()
+        {
+            dataRepository.Dispose();
         }
     }
 }

@@ -8,12 +8,17 @@ using NotifyBot.Utility;
 
 namespace NotifyBot.Controllers
 {
+    using Microsoft.Azure.Documents;
+
+    using ServiceStack;
+
     public class NotifyController : ApiController
     {
         [HttpPost]
         public HttpResponseMessage PostNotification(NotifyRequest request)
         {
             HttpResponseMessage responseMessage;
+            var commandHandler = new CommandHandler();
             try
             {
                 var senderName = request.Item.message.from.name;
@@ -35,30 +40,33 @@ namespace NotifyBot.Controllers
                 
                 //get message
                 var message = parsedMessage.Item2;
+                Document result = null;
                 
-                var commandHandler = new CommandHandler();
                 if (commandResult)
                 {
 
                     switch (command)
                     {
                         case Command.Add:
-                            commandHandler.Add(message);
+                            result = commandHandler.Add(message);
                             break;
                         case Command.Update:
-                            commandHandler.Update();
+                            result = commandHandler.Update(message);
                             break;
                         default:
-                            commandHandler.Email();
+                            result = commandHandler.Email(commandString, message);
                             break;
                     }
                 }
 
-
+                if (result == null)
+                {
+                    throw new Exception("invalid command");
+                }
 
 
                 //Send emails
-                var to = "dominickaleardi@quickenloans.com";
+                var to = Newtonsoft.Json.JsonConvert.DeserializeObject<Notification>(result.ToString()).Recipients;
                 var subject = senderName + " AKA " + senderMention + " has notified you!";
                 var body = message;
 
@@ -76,6 +84,7 @@ namespace NotifyBot.Controllers
             }
             catch (Exception ex)
             {
+                commandHandler.Dispose();
                 responseMessage = this.Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex);
             }
             return responseMessage;

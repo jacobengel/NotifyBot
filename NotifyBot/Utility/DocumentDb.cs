@@ -36,7 +36,9 @@ namespace NotifyBot.Utility
             }
             catch (Exception e)
             {
+                this.client.Dispose();
                 throw new Exception("Error setting up database");
+
             }
         }
 
@@ -105,6 +107,11 @@ namespace NotifyBot.Utility
                 throw new Exception("Document Id: " + documentId + " not found");
             }
             return document;
+        }
+
+        public void Dispose()
+        {
+            this.client.Dispose();
         }
     }
 }
