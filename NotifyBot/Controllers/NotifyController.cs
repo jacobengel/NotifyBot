@@ -33,7 +33,7 @@ namespace NotifyBot.Controllers
                 var parsedMessage = Parser.SplitOnFirstWord(tempString);
                 
                 //get command
-                var commandString = parsedMessage.Item1;
+                var commandString = parsedMessage.Item1.Trim();
                 Command command;
                 var commandResult = Enum.TryParse(commandString, true, out command);
                 
