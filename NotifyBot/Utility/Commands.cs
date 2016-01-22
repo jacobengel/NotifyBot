@@ -28,7 +28,7 @@ namespace NotifyBot.Utility
         public string Add(string message)
         {
             var parsedMessage = Parser.SplitOnFirstWord(message);
-            var notification = new Notification { Id = parsedMessage.Item1, Type = "email", Recipients = parsedMessage.Item2 };
+            var notification = new Notification { Id = parsedMessage.Item1.Trim(), Type = "email", Recipients = parsedMessage.Item2 };
             var documentTask = dataRepository.CreateDocumentAsync(notification.Id, notification);
             documentTask.Wait();
             if (documentTask.Result != null)
@@ -58,7 +58,6 @@ namespace NotifyBot.Utility
 
             this.sendEmail(to, subject, body);
             return "Email sent successfully";
-
         }
 
         private void sendEmail(string to, string subject, string body)
