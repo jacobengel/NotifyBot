@@ -33,3 +33,5 @@ C:\HackIT\NotifyBot\NotifyBot\bin\Antlr3.Runtime.pdb
 C:\HackIT\NotifyBot\NotifyBot\obj\Debug\NotifyBot.csprojResolveAssemblyReference.cache
 C:\HackIT\NotifyBot\NotifyBot\obj\Debug\NotifyBot.dll
 C:\HackIT\NotifyBot\NotifyBot\obj\Debug\NotifyBot.pdb
+C:\HackIT\NotifyBot\NotifyBot\bin\Microsoft.Azure.Documents.Client.dll
+C:\HackIT\NotifyBot\NotifyBot\bin\Microsoft.Azure.Documents.Client.xml

@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using System.Net.Mail;
+using NotifyBot.Models;
+using NotifyBot.Utility;
 
 namespace NotifyBot.Controllers
 {
-    using System.Net.Mail;
-
-    using NotifyBot.Models;
-
     public class NotifyController : ApiController
     {
         [HttpPost]
@@ -27,6 +24,9 @@ namespace NotifyBot.Controllers
                 var to = "dominickaleardi@quickenloans.com";
                 var subject = senderName + " AKA " + senderMention + " has notified you!";
                 var body = text;
+
+                var dataRepo = new DocumentDbRepository();
+                dataRepo.Setup();
 
                 this.sendEmail(to, subject, body);
 
