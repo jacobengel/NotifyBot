@@ -18,27 +18,61 @@ namespace NotifyBot.Controllers
             {
                 var senderName = request.Item.message.from.name;
                 var senderMention = request.Item.message.from.mention_name;
-                var text = request.Item.message.message.Substring(8);
-
                 
+                var tempString = Parser.SplitOnFirstWord(request.Item.message.message).Item2;
+                if (string.IsNullOrEmpty(tempString))
+                {
+                    throw new Exception("no email distribution alias provided");
+                }
+
+                // parse message
+                var parsedMessage = Parser.SplitOnFirstWord(tempString);
+                
+                //get command
+                var commandString = parsedMessage.Item1;
+                Command command;
+                var commandResult = Enum.TryParse(commandString, true, out command);
+                
+                //get message
+                var message = parsedMessage.Item2;
+                
+                var commandHandler = new CommandHandler();
+                if (commandResult)
+                {
+
+                    switch (command)
+                    {
+                        case Command.Add:
+                            commandHandler.Add(message);
+                            break;
+                        case Command.Update:
+                            commandHandler.Update();
+                            break;
+                        default:
+                            commandHandler.Email();
+                            break;
+                    }
+                }
+
+
+
+
+                //Send emails
                 var to = "dominickaleardi@quickenloans.com";
                 var subject = senderName + " AKA " + senderMention + " has notified you!";
-                var body = text;
-
-                var dataRepo = new DocumentDbRepository();
-                dataRepo.Setup();
+                var body = message;
 
                 this.sendEmail(to, subject, body);
 
-
-                var message = new NotifyResponse
+                // Notify Hipchat
+                var responseBody = new NotifyResponse
                 {
                     color = "green",
-                    message = "It's going to be sunny tomorrow! (" + text + " )",
+                    message = "It's going to be sunny tomorrow! (" + message + " )",
                     message_format = "text",
                     notify = "false"
                 };
-                responseMessage = this.Request.CreateResponse(HttpStatusCode.OK, message);
+                responseMessage = this.Request.CreateResponse(HttpStatusCode.OK, responseBody);
             }
             catch (Exception ex)
             {

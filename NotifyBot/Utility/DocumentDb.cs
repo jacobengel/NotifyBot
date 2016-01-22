@@ -76,7 +76,7 @@ namespace NotifyBot.Utility
             return this.collection;
         }
 
-        public async Task<Document> CreateDocument(string documentId, object documentObject)
+        public async Task<Document> CreateDocumentAsync(string documentId, object documentObject)
         {
             // Check to verify a document with the id=AndersenFamily does not exist
             var document = this.client.CreateDocumentQuery("dbs/" + this.database.Id + "/colls/" + this.collection.Id).Where(d => d.Id == documentId).AsEnumerable().FirstOrDefault();
@@ -86,28 +86,25 @@ namespace NotifyBot.Utility
             {
                 // id based routing for the first argument, "dbs/FamilyRegistry/colls/FamilyCollection"
                 document = await this.client.CreateDocumentAsync("dbs/" + this.database.Id + "/colls/" + this.collection.Id, documentObject);
+                return document;
             }
 
-            return document;
-        } 
+            return null;
+        }
 
         public Document GetDocument(string documentId)
         {
             // Check to verify a document with the id=AndersenFamily does not exist
-            var document = this.client.CreateDocumentQuery("dbs/" + this.database.Id + "/colls/" + this.collection.Id).Where(d => d.Id == documentId).AsEnumerable().FirstOrDefault();
+            var document =
+                this.client.CreateDocumentQuery("dbs/" + this.database.Id + "/colls/" + this.collection.Id)
+                    .Where(d => d.Id == documentId)
+                    .AsEnumerable()
+                    .FirstOrDefault();
             if (document == null)
             {
                 throw new Exception("Document Id: " + documentId + " not found");
             }
             return document;
-
-        }
-
-        internal sealed class Notification
-        {
-            public string Id { get; set; }
-            public string Type { get; set; }
-            public string Recipients { get; set; }
         }
     }
 }
